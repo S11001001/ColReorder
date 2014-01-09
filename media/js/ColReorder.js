@@ -823,6 +823,13 @@ ColReorder.prototype = {
 		var scrollXEnabled;
 		
 		scrollXEnabled = this.s.dt.oInit.sScrollX === "" ? false:true;
+
+		// S11001001: treat sScrollX as false if not currently
+		// x-scrolling
+		var tableScroller = $('div.dataTables_scrollBody', this.s.dt.nTableWrapper);
+		scrollXEnabled = scrollXEnabled &&
+		    (tableScroller.length <= 0
+		     || tableScroller[0].offsetWidth !== tableScroller[0].scrollWidth);
 	
 		//Keep the current table's width (used in case sScrollX is enabled to resize the whole table, giving an Excel-like behavior)
 		if(this.table_size < 0 && scrollXEnabled && $('div.dataTables_scrollHead', this.s.dt.nTableWrapper) != undefined){

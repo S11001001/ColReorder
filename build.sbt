@@ -28,11 +28,11 @@
 
 parallelExecution := true
 
-name := "datatables-static"
+name := "datatables-colreorderwithresize-static"
 
 organization := "com.clarifi"
 
-version := "1.9.4"
+version := "1.0.8.1"
 
 licenses := Seq("GNU General Public License (GPL), Version 2"
                   -> url("http://www.gnu.org/licenses/old-licenses/gpl-2.0.html"),
@@ -40,6 +40,8 @@ licenses := Seq("GNU General Public License (GPL), Version 2"
                   -> url("http://datatables.net/license_bsd"))
 
 homepage := Some(url("http://www.datatables.net"))
+
+libraryDependencies += "com.clarifi" % "datatables-static" % "1.9.4"
 
 autoScalaLibrary := false // don't dep on scala-library
 
@@ -58,7 +60,7 @@ excludeFilter in (Compile, unmanagedResources) <<=
       Seq("unit_testing/", "src/") exists (rel startsWith)})
 }
 
-classDirectory in Compile ~= (_ / "com" / "clarifi" / "datatablesstatic" / "media")
+classDirectory in Compile ~= (_ / "com" / "clarifi" / "datatablesstatic" / "colreorderwithresize")
 
 // Remove precisely as many path components as we added in
 // `classDirectory in Compile`, for the jar output.
@@ -69,8 +71,8 @@ products in Compile <<= (classDirectory in Compile, products in Compile) map {
 
 resourceGenerators in Compile <+= (streams, resourceManaged in Compile,
                                    resourceDirectory in Compile) map {(s, tgt, sd) =>
-  val ifile = sd / "js" / "jquery.dataTables.js"
-  val ofile = tgt / "js" / "jquery.dataTables.min.js"
+  val ifile = sd / "js" / "ColReorder.js"
+  val ofile = tgt / "js" / "ColReorder.min.js"
   import com.clarifi.datatablesstatic.project._
   Closure.compile(Closure.compiler(s), ifile) match {
     case Left(errs) => throw new RuntimeException(errs.size + " errors")

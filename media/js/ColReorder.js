@@ -278,10 +278,6 @@ $.fn.dataTableExt.oApi.fnColReorder = function ( oSettings, iFrom, iTo )
 	/* Sort listener */
 	for ( i=0, iLen=iCols ; i<iLen ; i++ )
 	{
-		//Martin Marchetta: 
-		//Update the internal column index, since columns are actually being re-ordered in the internal structure
-		oSettings.aoColumns[i]._ColReorder_iOrigCol = i;
-		///////////////////////////////////
 		$(oSettings.aoColumns[i].nTh).unbind('click');
 		this.oApi._fnSortAttachListener( oSettings, oSettings.aoColumns[i].nTh, i );
 	}
@@ -526,8 +522,10 @@ ColReorder.prototype = {
 				this._fnMouseListener( i, this.s.dt.aoColumns[i].nTh );
 			}
 			
-			/* Mark the original column order for later reference */
-			this.s.dt.aoColumns[i]._ColReorder_iOrigCol = i;
+			/* Mark the original column order for later reference, if
+			   yet unmarked */
+			if (this.s.dt.aoColumns[i]._ColReorder_iOrigCol === undefined)
+				this.s.dt.aoColumns[i]._ColReorder_iOrigCol = i;
 		}
 		
 		/* State saving */

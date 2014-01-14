@@ -32,7 +32,7 @@ name := "datatables-colreorderwithresize-static"
 
 organization := "com.clarifi"
 
-version := "1.0.8.2"
+version := "1.0.8.3"
 
 licenses := Seq("GNU General Public License (GPL), Version 2"
                   -> url("http://www.gnu.org/licenses/old-licenses/gpl-2.0.html"),
@@ -60,7 +60,7 @@ excludeFilter in (Compile, unmanagedResources) <<=
       Seq("unit_testing/", "src/") exists (rel startsWith)})
 }
 
-classDirectory in Compile ~= (_ / "com" / "clarifi" / "datatablesstatic-colreorderwithresize")
+classDirectory in Compile ~= (_ / "com" / "clarifi" / "datatablescolreorderwithresizestatic")
 
 // Remove precisely as many path components as we added in
 // `classDirectory in Compile`, for the jar output.

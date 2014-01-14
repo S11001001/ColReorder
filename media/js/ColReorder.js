@@ -279,8 +279,6 @@ $.fn.dataTableExt.oApi.fnColReorder = function ( oSettings, iFrom, iTo )
 	for ( i=0, iLen=iCols ; i<iLen ; i++ )
 	{
 		//Martin Marchetta: 
-		//Update this field which is the one used by DataTables for getting the column's data for sorting.
-		oSettings.aoColumns[i].aDataSort = [i];
 		//Update the internal column index, since columns are actually being re-ordered in the internal structure
 		oSettings.aoColumns[i]._ColReorder_iOrigCol = i;
 		///////////////////////////////////

@@ -885,15 +885,22 @@ ColReorder.prototype = {
 		if (this.dom.resize) {       
 		  var nTh = this.s.mouse.resizeElem;
 		  var nThNext = $(nTh).next();
-		  var moveLength = e.pageX-this.s.mouse.startX; 
-		  if (moveLength != 0 && !scrollXEnabled)
-			$(nThNext).width(this.s.mouse.nextStartWidth - moveLength);
-		  $(nTh).width(this.s.mouse.startWidth + moveLength);
-			  
+		  var moveLength = e.pageX - this.s.mouse.startX;
+
+		  var targetWidth = this.s.mouse.startWidth + moveLength;
+		  $(nTh).width(targetWidth);
+		  var actualWidth = $(nTh).width();
+		  //width might not match with what we set it to because it might have violated minimum width, so update the moveLength accordingly
+		  moveLength = actualWidth - this.s.mouse.startWidth;
+
+		  if (moveLength != 0 && !scrollXEnabled) {
+		    $(nThNext).width(this.s.mouse.nextStartWidth - moveLength);
+		  }
+
 		  //Martin Marchetta: Resize the header too (if sScrollX is enabled)
 		  if(scrollXEnabled && $('div.dataTables_scrollHead', this.s.dt.nTableWrapper) != undefined){
-			if($('div.dataTables_scrollHead', this.s.dt.nTableWrapper).length > 0)
-				$($('div.dataTables_scrollHead', this.s.dt.nTableWrapper)[0].childNodes[0].childNodes[0]).width(this.table_size + moveLength);
+			  if($('div.dataTables_scrollHead', this.s.dt.nTableWrapper).length > 0)
+				  $($('div.dataTables_scrollHead', this.s.dt.nTableWrapper)[0].childNodes[0].childNodes[0]).width(this.table_size + moveLength);
 		  }
 			  
 		  ////////////////////////
@@ -904,33 +911,45 @@ ColReorder.prototype = {
 			  //...if so, when resizing the header, also resize the table's body (when enabling the Scroller, the table's header and
 			  //body are split into different tables, so the column resizing doesn't work anymore)
 		    if ($('div.dataTables_scrollBody', this.s.dt.nTableWrapper).length > 0) {
-				  //Since some columns might have been hidden, find the correct one to resize in the table's body
-				  var currentColumnIndex;
-				  visibleColumnIndex = -1;
+		      //Get the scroller's div
+		      var tableScroller$ = $(this.s.dt.nTableWrapper).find('div.dataTables_scrollBody').first();
+		      //Get the table header
+		      var scrollingTableHead$ = tableScroller$.find('table thead');
+          //Get the columns which have already been resized
+		      var col$ = $(nTh);
+		      var nextCol$ = $(nThNext);
 
-          //because you can resize from either the left side of the column or the right, we need to find the real index
-				  var realColResized = this.s.resizeInProgress === 'left' ? colResized - 1 : colResized;
-
-				  for (currentColumnIndex = -1; currentColumnIndex < this.s.dt.aoColumns.length - 1 && currentColumnIndex != realColResized; currentColumnIndex++) {
-					  if(this.s.dt.aoColumns[currentColumnIndex+1].bVisible)
-						  visibleColumnIndex++;
+				  function matchWidth(source$, target$) {
+            //get the width to attempt to apply from the source
+				    var srcWidth = source$.width();
+            //attempt to apply the same width
+				    target$.width(srcWidth);
+            //get the width that actually was applied (e.g. min widths might have to be respected and thus adjust our true width outcome)
+				    var targetWidth = target$.width();
+            //if the target constrains the width to be larger, now back-project that onto the source
+				    if (targetWidth > srcWidth) {
+				      source$.width(targetWidth);
+				    }
 				  }
-          
-				  //Get the scroller's div
-				  tableScroller = $('div.dataTables_scrollBody', this.s.dt.nTableWrapper)[0];
-				
-				  //Get the table
-				  scrollingTableHead = $(tableScroller)[0].childNodes[0].childNodes[0].childNodes[0];
+
+				  function getCorrespondingColumn(nTh$) {
+				    var row$ = nTh$.parent();
+				    var head$ = row$.parent();
+				    var rowIndex = head$.children('tr').index(row$);
+				    var colIndex = row$.children('th').index(nTh$);
+				    var scrollBodyHeadCol$ = scrollingTableHead$.children('tr').eq(rowIndex).children('th').eq(colIndex);
+				    return scrollBodyHeadCol$;
+				  }
 
 		      //Resize the columns
-				  if (moveLength != 0 && !scrollXEnabled){
-					  $($(scrollingTableHead)[0].childNodes[visibleColumnIndex+1]).width(this.s.mouse.nextStartWidth - moveLength);
+				  if (moveLength != 0 && !scrollXEnabled) {
+				    matchWidth(nextCol$, getCorrespondingColumn(nextCol$));
 				  }
-				  $($(scrollingTableHead)[0].childNodes[visibleColumnIndex]).width(this.s.mouse.startWidth + moveLength);
-				
+				  matchWidth(col$, getCorrespondingColumn(col$));
+				  
 				  //Resize the table too
 				  if(scrollXEnabled)
-					  $($(tableScroller)[0].childNodes[0]).width(this.table_size + moveLength);
+					  tableScroller$.children('table').first().width(this.table_size + moveLength);
 			  }
 		  }
 		  ////////////////////////

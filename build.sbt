@@ -32,7 +32,7 @@ name := "datatables-colreorderwithresize-static"
 
 organization := "com.clarifi"
 
-version := "1.0.8.4"
+version := "1.0.8.5"
 
 licenses := Seq("GNU General Public License (GPL), Version 2"
                   -> url("http://www.gnu.org/licenses/old-licenses/gpl-2.0.html"),

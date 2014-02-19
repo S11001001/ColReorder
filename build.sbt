@@ -1,5 +1,5 @@
 // build.sbt: sbt build settings for DataTables.
-// Copyright (C) 2013  McGraw Hill Financial
+// Copyright (C) 2013-2014  McGraw Hill Financial
 //
 // All rights reserved.
 //
@@ -26,6 +26,8 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import ClosureKeys.{closure, closureOptions}
+
 parallelExecution := true
 
 name := "datatables-colreorderwithresize-static"
@@ -51,14 +53,7 @@ crossVersion := CrossVersion.Disabled // don't add _2.9.2 to artifact name
 
 resourceDirectory in Compile <<= baseDirectory(_ / "media")
 
-excludeFilter in (Compile, unmanagedResources) <<=
-  (resourceDirectory in Compile, excludeFilter in (Compile, unmanagedResources)) {
-    (resd, ef) =>
-    val rbase = resd.toURI
-    ef || new SimpleFileFilter({s =>
-      val rel = (rbase relativize s.toURI getPath)
-      Seq("unit_testing/", "src/") exists (rel startsWith)})
-}
+excludeFilter in (Compile, unmanagedResources) ~= (_ || GlobFilter("*.jsm"))
 
 classDirectory in Compile ~= (_ / "com" / "clarifi" / "datatablescolreorderwithresizestatic")
 
@@ -69,14 +64,16 @@ products in Compile <<= (classDirectory in Compile, products in Compile) map {
   (filt filter (cd !=)) :+ (cd / ".." / ".." / "..")
 }
 
-resourceGenerators in Compile <+= (streams, resourceManaged in Compile,
-                                   resourceDirectory in Compile) map {(s, tgt, sd) =>
-  val ifile = sd / "js" / "ColReorder.js"
-  val ofile = tgt / "js" / "ColReorder.min.js"
-  import com.clarifi.datatablesstatic.project._
-  Closure.compile(Closure.compiler(s), ifile) match {
-    case Left(errs) => throw new RuntimeException(errs.size + " errors")
-    case Right(compiled) => IO.write(ofile, compiled, append = false)
-  }
-  Seq(ofile)
+closureSettings
+
+sourceDirectory in (Compile, closure) := (resourceDirectory in Compile).value
+
+resourceManaged in (Compile, closure) := (resourceManaged in Compile).value
+
+closureOptions in Compile := {
+  import com.google.javascript.jscomp
+  val v = new jscomp.CompilerOptions()
+  val lvl = jscomp.CompilationLevel.SIMPLE_OPTIMIZATIONS
+  lvl.setOptionsForCompilationLevel(v)
+  v
 }
